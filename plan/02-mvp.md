@@ -17,6 +17,23 @@ The first executable milestone focuses on ingesting a small set of PDFs/Markdown
 - `/ask` (CLI or simple script) returns grounded answer with citations
 - Docs: how to run, env vars, and sample
 
+### Performance Targets (MVP)
+
+**Ingestion:**
+- PDF parsing: ≤ 2s per MB
+- Embedding batch (256 chunks): ≤ 30s (OpenAI), ≤ 10s (Ollama local)
+- LanceDB upsert: ≤ 5s per 1000 records
+
+**Query Performance:**
+- Vector search (k=20): ≤ 300ms
+- End-to-end `/ask`: ≤ 3s (excluding cold start)
+- Context assembly: ≤ 100ms
+
+**Scalability Limits (MVP):**
+- Corpus size: ≤ 10,000 chunks
+- Concurrent queries: ≤ 5
+- Memory usage: ≤ 2GB
+
 #### Template Compliance
 - Commands: `npx create-mastra@latest --template template-name`, `cp .env.example .env`, `npm install`, `npm run dev`
 - Structure: code under `src/mastra/` (agents/tools/workflows/index.ts)

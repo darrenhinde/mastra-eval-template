@@ -11,6 +11,38 @@
 - Metrics: latency, hit-rate, LLM token/cost, fallback percentage
 - Logging strategy: structured logs; optional Prometheus/Grafana integration
 
+### Production Monitoring
+
+**Metrics Collection:**
+```typescript
+export interface RAGMetrics {
+  ingestion: {
+    documentsProcessed: number;
+    chunksCreated: number;
+    failureRate: number;
+    avgProcessingTime: number;
+  };
+  retrieval: {
+    queriesProcessed: number;
+    avgLatency: number;
+    emptyResultRate: number;
+    avgRelevanceScore: number;
+  };
+  generation: {
+    responsesGenerated: number;
+    avgTokensUsed: number;
+    citationRate: number;
+    guardrailViolations: number;
+  };
+}
+```
+
+**Telemetry Hooks:**
+- Structured logging with correlation IDs
+- Performance timing for each pipeline stage
+- Cost tracking (API calls, token usage)
+- Quality metrics (citation accuracy, relevance scores)
+
 #### Guardrails (IOGuards)
 - Checks: toxicity, PII patterns, prompt-injection heuristics
 - Placement: pre-generation (sanitize user input) and post-generation (redact)

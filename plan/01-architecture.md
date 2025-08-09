@@ -148,6 +148,23 @@ export type EmbeddingRecord = {
 
 Retry policy: exponential backoff base 500ms, factor 2, jitter 0–250ms, max 5 attempts. Timeouts: provider calls 30s, LanceDB ops 15s.
 
+### Network Failure Recovery
+
+**Provider Outages:**
+- Circuit breaker pattern: 3 failures → 60s cooldown
+- Graceful degradation: cache last successful embeddings for retry
+- Health check endpoints for Ollama connectivity
+
+**Partial Failures:**
+- Batch processing: continue on individual chunk failures
+- Ingestion: maintain progress state for resume capability
+- Storage: transaction-like semantics for batch upserts
+
+**Recovery Strategies:**
+- Auto-retry with exponential backoff (max 5 attempts)
+- Fallback to alternative providers when configured
+- Persistent failure logging for manual intervention
+
 ### Observability and Operations
 
 - Structured logging: ingestion counts, failures by cause, embedding latency, search hit-rate, answer length, token usage

@@ -182,6 +182,37 @@ const results = await retrieveMultiplex('refund policy', decision, 20);
 ```ts
 import { z } from 'zod';
 
+// Environment validation schemas
+export const EnvSchema = z.object({
+  // Core
+  LANCEDB_PATH: z.string().min(1),
+  
+  // Embeddings
+  EMBEDDING_PROVIDER: z.enum(['ollama', 'openai']),
+  EMBEDDING_MODEL: z.string().optional(),
+  EMBEDDING_DIM: z.coerce.number().int().positive().optional(),
+  OLLAMA_BASE_URL: z.string().url().optional(),
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  
+  // LLM
+  LLM_PROVIDER: z.enum(['openai', 'anthropic', 'google', 'ollama']).optional(),
+  LLM_MODEL: z.string().optional(),
+  LLM_ALIAS_DEFAULT: z.string().optional(),
+  
+  // Optional
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+});
+
+// Validation function
+export function validateEnv(): z.infer<typeof EnvSchema> {
+  const result = EnvSchema.safeParse(process.env);
+  if (!result.success) {
+    throw new Error(`Environment validation failed: ${result.error.message}`);
+  }
+  return result.data;
+}
+
 export const ChunkSchema = z.object({
   id: z.string().min(1),
   docId: z.string().min(1),
