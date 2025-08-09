@@ -28,6 +28,10 @@ src/
         lancedb.ts
         embed.ts
         upsert.ts
+      embeddings/
+        adapter.ts            // getEmbeddingAdapterFromEnv
+        ollama.ts             // nomic-embed-text via Ollama REST
+        openai.ts             // OpenAI embeddings
       retrieval/
         retrieve.ts
         assemble.ts
@@ -43,6 +47,10 @@ src/
         guardrails.ts
       telemetry/
         metrics.ts
+      models/
+        registry.ts           // central LLM model(alias) registry
+    config/
+      models.ts               // MODEL_ALIASES and related env-driven config
     workflows/
       ingest-workflow.ts
       retrieve-workflow.ts
@@ -56,6 +64,12 @@ src/
 - `GOOGLE_GENERATIVE_AI_API_KEY=` (optional)
 - `LANCEDB_PATH=` (path to LanceDB storage)
 - `DEFAULT_TENANT_ID=` (optional for dev)
+- `EMBEDDING_PROVIDER=` (e.g., `ollama` | `openai`)
+- `EMBEDDING_MODEL=` (e.g., `nomic-embed-text` | `text-embedding-3-small`)
+- `EMBEDDING_DIM=` (e.g., `768` | `1536`)
+- `OLLAMA_BASE_URL=` (default `http://localhost:11434`)
+- `LLM_ALIAS_DEFAULT=` (e.g., `default` | `llama2`)
+- `LLM_DEFAULT_MODEL=` (optional hard override, e.g., `openai:gpt-4o-mini`)
 
 #### TypeScript Config (`tsconfig.json`)
 Use the standard Mastra TS config exactly as provided in the documentation snippet.

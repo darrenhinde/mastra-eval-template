@@ -6,10 +6,10 @@ The first executable milestone focuses on ingesting a small set of PDFs/Markdown
 - Sources: PDF and Markdown only
 - Parsing: `pdf-parse` or `pdf-extract-ts` for PDF, `remark` for Markdown
 - Chunking: paragraph splitter with small overlap; token fallback
-- Embeddings: OpenAI `text-embedding-3-small`
+- Embeddings: modular via adapter — default Ollama `nomic-embed-text` (768-dim) or OpenAI `text-embedding-3-small` (1536-dim); choose via env
 - Storage: LanceDB table `chunks`
 - Retrieval: vector search (cosine) k=20; simple context assembly
-- Generation: single Mastra Agent with system + context + user prompt, answer ≤ 300 tokens with citations (chunk ids)
+- Generation: single Mastra Agent with system + context + user prompt, answer ≤ 300 tokens with citations (chunk ids); model selected via `getModel()` (alias or explicit)
 
 #### Acceptance Criteria
 - `ingest-workflow` runs on a folder of documents and creates LanceDB records
@@ -44,7 +44,10 @@ The first executable milestone focuses on ingesting a small set of PDFs/Markdown
 - As a maintainer, I can inspect LanceDB records for text/metadata correctness
 
 ### Definition of Ready
-- `.env` configured with `OPENAI_API_KEY` and `LANCEDB_PATH`
+- `.env` configured with `LANCEDB_PATH` and either:
+  - `EMBEDDING_PROVIDER=ollama` with `OLLAMA_BASE_URL` (and model pulled), or
+  - `EMBEDDING_PROVIDER=openai` with `OPENAI_API_KEY`
+- Optional LLM: `LLM_ALIAS_DEFAULT` or `LLM_DEFAULT_MODEL` for agent selection
 - Sample documents placed under `./data`
 - Scripts available: `ingest`, `ask`, `eval` (stubs acceptable for MVP)
 

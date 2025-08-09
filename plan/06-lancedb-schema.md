@@ -54,6 +54,9 @@ source: string
 keywords: string[]
 tokens: int
 seq: int
+provider: string         // e.g., 'ollama' | 'openai'
+model: string            // e.g., 'nomic-embed-text' | 'text-embedding-3-small'
+embeddingDim: int        // e.g., 768 or 1536
 ```
 
 ### Example Queries and Tests

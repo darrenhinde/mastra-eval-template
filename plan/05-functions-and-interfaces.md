@@ -44,6 +44,20 @@ export async function embedChunks(chunks: Chunk[]): Promise<Array<EmbeddingRecor
 export async function upsertEmbeddings(tableName: string, records: EmbeddingRecord[]): Promise<void>;
 ```
 
+#### Embedding Providers (Adapters)
+Location: `src/mastra/tools/embeddings/`
+
+```ts
+export type EmbeddingAdapter = {
+  name: 'ollama' | 'openai';
+  model: string;
+  expectedDim?: number;
+  embedBatch(texts: string[]): Promise<number[][]>;
+};
+
+export async function getEmbeddingAdapterFromEnv(): Promise<EmbeddingAdapter>;
+```
+
 #### Retrieval (Tools + Workflow)
 Location: `src/mastra/tools/retrieval/`, `src/mastra/workflows/`
 

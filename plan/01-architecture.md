@@ -217,3 +217,133 @@ Tests:
 - Bad: Post-filtering removes all top results leading to empty context despite relevant data in a denormalized table
 
 
+---
+
+### ASCII Architecture Maps (@00-mastra-master-reference.md, Mastra template guide)
+
+MVP codebase layout (framework-free; Mastra-focused; single-tenant, single-table):
+
+```
+mastra-rag-template/
+  .env.example
+  package.json
+  tsconfig.json
+  README.md
+  scripts/
+    ingest.ts                # run ingest-workflow
+    ask.ts                   # query via agent using getModel()
+    eval.ts                  # run offline evals
+  src/
+    mastra/
+      index.ts               # exports agents, tools, workflows
+      agents/
+        rag-agent.ts         # prompt skeleton; citations; guardrails
+      tools/
+        ingestion/
+          mime.ts            # detectMime
+          parse.ts           # parseDocument (PDF/MD)
+          clean.ts           # cleanText
+          chunk.ts           # splitIntoChunks (paragraph, 10% overlap)
+          metadata.ts        # extractMetadataHybrid (regex)
+        embeddings/
+          adapter.ts         # getEmbeddingAdapterFromEnv()
+          ollama.ts          # nomic-embed-text (768-dim)
+          openai.ts          # text-embedding-3-small (1536-dim)
+        vectorstore/
+          lancedb.ts         # getLanceDb, getOrCreateTable
+          embed.ts           # embedChunks (uses embeddings adapter)
+          upsert.ts          # upsertEmbeddings (indexes, provenance)
+        retrieval/
+          retrieve.ts        # search with cosine; filters via .where
+          assemble.ts        # greedy pack ≤ token budget
+        models/
+          registry.ts        # getModel(spec?, options?) with alias + fallback
+        eval/
+          retrieval-eval.ts  # recall/MRR utilities (MVP-lite)
+          generation-eval.ts # faithfulness/relevancy utilities (MVP-lite)
+          guardrails.ts      # toxicity/PII/injection checks (basic)
+      workflows/
+        ingest-workflow.ts   # parse → clean → chunk → embed → upsert
+        retrieve-workflow.ts # embed query → search → assemble [rerank N/A]
+        evaluate-workflow.ts # compute metrics; store run summary
+      config/
+        models.ts            # MODEL_ALIASES (ordered fallback chains)
+  plan/                      # design docs (this folder)
+  tasks/
+    mvp/                     # five MVP task specs
+```
+
+Final codebase layout (multi-tenant; routing; reranking; richer evals & telemetry):
+
+```
+mastra-rag-template/
+  .env.example
+  package.json
+  tsconfig.json
+  README.md
+  scripts/
+    ingest.ts
+    ask.ts
+    eval.ts
+    route.ts                 # debug routing decisions
+  src/
+    mastra/
+      index.ts
+      agents/
+        rag-agent.ts
+      tools/
+        ingestion/
+          mime.ts
+          parse.ts           # + DOCX/HTML connectors
+          clean.ts
+          chunk.ts           # + heading/semantic strategies
+          metadata.ts        # + LLM extractors (title/summary/entities)
+          connectors/
+            docx.ts
+            html.ts
+            api.ts           # ETL example via workflow step
+        embeddings/
+          adapter.ts
+          ollama.ts
+          openai.ts
+        vectorstore/
+          lancedb.ts
+          embed.ts
+          upsert.ts
+        retrieval/
+          retrieve.ts
+          assemble.ts
+          rerank.ts          # cross-encoder / LLM reranker
+        routing/
+          route-multiplex.ts # query all relevant tables; merge
+          route-llm.ts       # classify sources/domains; emit filters
+        tenancy/
+          acl.ts             # applyAcl, resolveTenant
+        models/
+          registry.ts        # getModel with alias + retry/circuit-breaker fallback
+        eval/
+          retrieval-eval.ts
+          generation-eval.ts
+          guardrails.ts
+        telemetry/
+          metrics.ts         # latency, hit-rate, costs, selectivity
+      workflows/
+        ingest-workflow.ts
+        retrieve-workflow.ts
+        evaluate-workflow.ts
+      config/
+        models.ts            # MODEL_ALIASES; alias → provider:model chains
+    # optional: server/ for streaming endpoints if desired (keep framework-free)
+  plan/
+  tasks/
+    mvp/
+    phases/                  # future non-MVP tasks
+  eval/                      # datasets, reports (optional)
+```
+
+Notes
+- Both maps adhere to Mastra template structure: `src/mastra/{agents,tools,workflows,index.ts}` and strict TS/ESM.
+- MVP favors simplicity; Final expands with routing/tenancy/rerankers/telemetry while keeping modules isolated and replaceable.
+- See @00-mastra-master-reference.md for additional patterns (streaming, structured outputs, advanced workflows).
+
+
