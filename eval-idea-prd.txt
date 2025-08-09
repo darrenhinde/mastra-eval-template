@@ -1,0 +1,250 @@
+
+# Product Requirements Document: AI Model Evaluation Framework
+
+## 1. Overview
+This document outlines the requirements for an AI Model Evaluation Framework, designed as a Mastra AI template. 
+The primary goal is to provide a simple, extensible, and observable system for comparing the performance of different AI models and prompts on various tasks. 
+It will facilitate quantitative and qualitative analysis, track model behavior (including tool calls), and support versioning of prompts and models for continuous improvement.
+
+This framework will serve as a foundational "evals" template within the Mastra AI ecosystem, leveraging the new Scorer functionality for comprehensive analysis and ensuring production readiness through non-blocking execution.
+
+## 2. Goals
+*   **Enable Easy Model & Prompt Comparison**: Allow users to effortlessly switch between and compare multiple AI models (including Mastra Agents) and prompts on specific test scenarios.
+*   **Comprehensive Test Analysis**: Provide detailed statistics on model outputs, tool calls, latency, and token usage, along with qualitative assessments of performance.
+*   **Support Prompt & Model Versioning**: Establish a mechanism to version prompts and track model performance changes over time, facilitating A/B testing and iterative development.
+*   **Production Readiness**: Design the system for non-blocking, asynchronous evaluations, making it suitable for continuous monitoring in production environments without impacting core services.
+*   **Simplicity & Visualization**: Ensure the framework is straightforward to set up, use, and visualize results, making complex AI evaluations accessible.
+  *   **Mastra AI Scorer Integration**: Fully utilize the `MastraScorer` class for evaluation logic, providing a robust and extensible scoring mechanism.
+
+## 3. Key Features
+*   **Configurable Test Scenarios**: Users can define specific tasks or functions (Eval Functions) that AI models will attempt to solve. These scenarios will include inputs and expected outputs/behaviors.
+*   **Dynamic Model & Prompt Selection**: An interface or configuration mechanism to easily select which Mastra Agents or other AI models to test, and which prompts to use for each test run.
+*   **Automated Tool Call Tracking**: During test execution, the framework will automatically intercept and record all tool calls made by the evaluated models, including arguments and results.
+*   **Performance Metrics Collection**: Capture and report on key performance indicators such as latency, token usage (input/output), and cost for each model/prompt combination.
+*   **Comprehensive Analysis & Scoring**: Leverage `MastraScorer` to evaluate model outputs against expected results, providing a numerical score and a detailed reason for the score. This includes assessing correctness, completeness, and adherence to constraints.
+*   **Qualitative Outcome Labeling**: Allow for manual or automated labeling of test outcomes (e.g., "Success," "Partial Success," "Failure - AI Hallucination," "Failure - Tool Error," "Failure - Logic Bug") to provide deeper insights.
+*   **Prompt Versioning System**: A structured way to store and reference different versions of prompts used in evaluations, enabling historical performance tracking.
+*   **Results Persistence**: Store all test execution data (inputs, outputs, tool calls, metrics, scores, qualitative labels) in a structured format for historical analysis and dashboard display.
+*   **Non-Blocking Execution**: The test runner will be designed to execute evaluations asynchronously, preventing performance bottlenecks in critical applications.
+*   **Dashboard Integration (Conceptual)**: The output data format will be optimized for easy integration with a visualization dashboard, allowing users to view comparisons, trends, and detailed results.
+
+## 4. Architecture & Components
+
+The framework will be structured around the following core components, designed for modularity and extensibility:
+
+### 4.1. Test Runner (`src/core/test-runner.ts`)
+*   **Purpose**: Orchestrates the entire evaluation process. It takes a list of test scenarios, models, and prompts, executes them, collects results, and triggers the analysis.
+*   **Responsibilities**:
+    *   Iterate through selected test scenarios.
+    *   For each scenario, invoke the specified AI model(s) with the chosen prompt(s).
+    *   Capture raw outputs, tool calls, and performance metrics (latency, token usage).
+    *   Handle asynchronous execution of tests to ensure non-blocking operations.
+    *   Pass raw results to the `Results Store` for persistence.
+
+### 4.2. Test Scenarios / Eval Functions (`src/tests/`)
+*   **Purpose**: Defines the actual tasks or functions to be evaluated. Each scenario represents a specific test case for an AI model.
+*   **Responsibilities**:
+    *   Provide input data for the AI model.
+    *   Optionally define expected outputs or criteria for success.
+    *   Encapsulate the logic for a single evaluation task (e.g., text summarization, code generation, data extraction).
+
+### 4.3. Model Interface (`src/models/`)
+*   **Purpose**: Provides a standardized abstraction for interacting with different AI models, including Mastra Agents and other LLM providers.
+*   **Responsibilities**:
+    *   Define a common API for invoking models (e.g., `model.run(prompt, inputs, tools)`).
+    *   Handle model-specific configurations and API calls.
+    *   Enable easy integration of new models by implementing this interface.
+
+### 4.4. Prompt Management (`src/utils/prompt-manager.ts`)
+*   **Purpose**: Manages and versions prompts used in evaluations.
+*   **Responsibilities**:
+    *   Store prompts, allowing for different versions of the same prompt.
+    *   Retrieve prompts by ID or version.
+    *   Facilitate A/B testing of different prompt strategies.
+
+### 4.5. Tool Call Interception & Logging
+*   **Purpose**: Capture and record all tool calls made by the AI models during evaluation.
+*   **Responsibilities**:
+    *   Wrap or proxy tool invocations to log input arguments and results.
+    *   Provide structured data about each tool call for analysis.
+
+### 4.6. Results Store (`src/core/results-store.ts`)
+*   **Purpose**: Persists all raw and processed evaluation results.
+*   **Responsibilities**:
+    *   Store data for each test run: model used, prompt version, input, raw output, tool calls, metrics (latency, tokens), and `MastraScorer` results (score, reason).
+    *   Support querying and retrieval of historical evaluation data.
+    *   Initial implementation will be file-based (e.g., JSON files per run), with potential for database integration in future.
+
+### 4.7. Analysis & Reporting Module (`src/core/analysis-reporter.ts`)
+*   **Purpose**: Processes raw results into meaningful statistics and generates reports.
+*   **Responsibilities**:
+    *   Aggregate data across multiple runs, models, and prompts.
+    *   Calculate key performance metrics (success rate, tool call accuracy, latency, token usage).
+    *   Generate comparative reports and identify trends.
+    *   Prepare data for dashboard visualization.
+
+## 5. Mastra AI Integration Guidelines
+
+This framework will be built as a Mastra AI template, adhering to its structure and best practices, with a strong emphasis on leveraging the `MastraScorer` functionality.
+
+### 5.1. Project Structure
+The project will follow the standard Mastra template structure:
+*   All Mastra-specific code will reside in `src/mastra/`.
+*   Agents will be in `src/mastra/agents/`.
+*   Tools will be in `src/mastra/tools/`.
+*   Workflows will be in `src/mastra/workflows/`.
+*   The main Mastra configuration will be in `src/mastra/index.ts`.
+*   The evaluation framework's core logic will be in `src/core/`, `src/tests/`, and `src/utils/`.
+
+### 5.2. MastraScorer Implementation
+We will extensively use the `MastraScorer` class for evaluating model outputs. This is critical for generating comprehensive analysis and moving away from deprecated eval methods.
+*   **`createScorer` or `MastraScorer`**: We will create custom scorers using `createScorer` or by directly instantiating `MastraScorer` (for more control).
+*   **Step Functions (`extract`, `analyze`, `reason`)**: Each `MastraScorer` will implement these steps:
+    *   `extract`: To preprocess input/output pairs or extract relevant information before scoring.
+    *   `analyze`: The core scoring logic, returning a numerical `score`.
+    *   `reason`: To provide a textual explanation (`reason`) for the computed score. This will be crucial for understanding why a model succeeded or failed.
+*   **Integration**: Scorers will be invoked by the `Test Runner` on the output of each AI model run, and their results (score, reason) will be stored.
+*   **Example Scorer (`src/mastra/scorers/answer-correctness-scorer.ts`)**:
+    ```typescript
+    // src/mastra/scorers/answer-correctness-scorer.ts
+    import { createScorer } from '@mastra/core/scorer'; // Placeholder for actual import path
+    
+    export const answerCorrectnessScorer = createScorer({
+      name: 'AnswerCorrectnessScorer',
+      description: 'Evaluates if the model's output correctly answers the question based on expected output.',
+      analyze: async ({ input, output, additionalContext }) => {
+        const expectedOutput = additionalContext.expectedOutput; // Assuming expected output is passed via additionalContext
+        const modelOutput = output.content; // Adjust based on actual output structure
+        
+        let score = 0;
+        let results = {};
+    
+        // Implement comparison logic here (e.g., string similarity, keyword matching, LLM as judge)
+        if (modelOutput.includes(expectedOutput)) { // Simple example
+          score = 1; // Full match
+        } else if (modelOutput.length > 0 && expectedOutput.length > 0) {
+          score = 0.5; // Partial match or some content
+        }
+    
+        return { score, results: { modelOutput, expectedOutput } };
+      },
+      reason: async ({ score, analyzeStepResult }) => {
+        if (score === 1) {
+          return 'The model's output perfectly matched the expected answer.';
+        } else if (score === 0.5) {
+          return 'The model's output partially matched the expected answer.';
+        } else {
+          return 'The model's output did not match the expected answer.';
+        }
+      },
+    });
+    ```
+    *   **Reference**: [MastraScorer Documentation](https://mastra.ai/en/reference/scorers/mastra-scorer)
+
+### 5.3. Model Providers
+We will use `@ai-sdk/openai`, `@ai-sdk/anthropic`, or `@ai-sdk/google` for LLM integrations within Mastra Agents, as recommended by the template guidelines. Environment variables will be configured accordingly.
+
+### 5.4. Environment Configuration
+A `.env.example` file will be provided with all necessary API keys and configuration variables, following Mastra's standard.
+
+### 5.5. TypeScript Configuration
+The standard `tsconfig.json` as specified in Mastra templates will be used.
+
+### 5.6. Documentation
+A comprehensive `README.md` will be included, detailing setup, environment variables, usage, and customization, aligning with Mastra template requirements. Clear code comments will explain complex logic, API integrations, and configurations.
+
+### 5.7. Compatibility & Quality Standards
+The template will be:
+*   A single project, Mastra-focused, and framework-free.
+*   Node.js compatible (18+) and use ESM modules.
+*   Adhere to code quality, error handling, type safety, and testing best practices.
+
+## 6. Technical Design Principles (Rules for Building)
+
+1.  **Modularity First**:
+    *   Each core component (Test Runner, Model Interface, Results Store, etc.) must be independent and loosely coupled.
+    *   This ensures easy maintenance and allows for swapping out implementations (e.g., changing the results store from file-based to a database).
+
+2.  **Extensibility for Models & Tools**:
+    *   **Standardized Interfaces**: Define clear interfaces for integrating new AI models/agents and custom tools. Adding a new model should only require implementing this interface.
+    *   **Configuration-Driven**: New tests, models, and prompts should be easily added via configuration (e.g., JSON, YAML) rather than code changes where possible.
+
+3.  **Simplicity & Readability**:
+    *   Prioritize clear, concise code with ample comments. Avoid over-engineering complex patterns unless absolutely necessary for extensibility.
+    *   The framework should be easy for a new developer to understand and contribute to within minutes.
+
+4.  **Observability & Production Readiness**:
+    *   **Detailed Logging**: Implement comprehensive logging for all test runs, including inputs, outputs, tool calls, errors, and performance metrics.
+    *   **Asynchronous Execution**: The Test Runner should be designed for non-blocking operations, potentially using queues or background jobs, to avoid impacting critical paths in production.
+    *   **Structured Data Output**: Results should be stored in a structured, easily queryable format (e.g., JSON files, a simple database).
+
+5.  **Visualization-Oriented Output**:
+    *   The raw results and analysis should be designed with eventual dashboard visualization in mind.
+    *   Metrics should be easily plottable (e.g., time series for latency, bar charts for success rates).
+
+6.  **Tracking AI-Generated Code & Issues**:
+    *   For each test run, we need to explicitly tag if the evaluated "function" or "output" was AI-generated.
+    *   We will introduce a mechanism to **qualitatively label** outcomes (e.g., "Success," "Partial Success," "Failure - AI Hallucination," "Failure - Tool Call Error," "Failure - Logic Bug") to provide deeper insights into the root cause of issues, whether from the AI, tools, or the test scenario itself.
+
+## 7. Evaluation Metrics & Analysis
+
+The framework will provide the following key metrics and analysis capabilities for each test run and aggregated across multiple runs:
+
+*   **Success Rate**: The percentage of test cases where the model's output or behavior meets the defined success criteria, as determined by the `MastraScorer`.
+*   **MastraScorer Score & Reason**: The numerical score and the detailed textual explanation from the `MastraScorer` for each evaluation, providing fine-grained feedback.
+*   **Tool Call Metrics**:
+    *   **Tool Call Count**: Total number of tool calls made.
+    *   **Successful Tool Calls**: Number/percentage of tool calls that executed without error.
+    *   **Incorrect Tool Calls**: Number/percentage of tool calls that were semantically incorrect or called with wrong arguments, as determined by the `MastraScorer` or manual labeling.
+    *   **Missing Tool Calls**: Identification of required tool calls that the model failed to make.
+*   **Performance Metrics**:
+    *   **Latency**: Time taken for the model to generate a response (from request to completion).
+    *   **Token Usage**: Input and output token counts for each model interaction, crucial for cost analysis.
+    *   **Cost Estimation**: Estimated cost per run based on token usage and model pricing.
+*   **Qualitative Analysis**: Based on the outcome labels (e.g., "AI Hallucination," "Tool Error"), generate reports on common failure modes for different models/prompts, allowing for targeted improvements.
+*   **Comparative Analysis**: Side-by-side performance comparisons (scores, latency, token usage) between different models and prompt versions.
+*   **Trend Analysis**: Ability to visualize performance trends over time for a given model/prompt, useful for tracking improvements or regressions.
+
+## 8. High-Level Project Structure
+
+```
+eval-template/
+├── src/
+│   ├── core/                  # Core interfaces, test runner, results store, analysis
+│   │   ├── interfaces.ts      # Defines IModel, ITool, ITestScenario, IResult, IScorer
+│   │   ├── test-runner.ts     # Main orchestration logic for running evaluations
+│   │   ├── results-store.ts   # Handles saving and loading of evaluation results
+│   │   └── analysis-reporter.ts # Logic for processing raw results into reports
+│   ├── mastra/                # Mastra AI specific implementations
+│   │   ├── agents/            # Placeholder for Mastra Agents to be evaluated
+│   │   │   └── example-agent.ts
+│   │   ├── tools/             # Mastra Tools that agents might use during evaluations
+│   │   │   └── example-tool.ts
+│   │   ├── scorers/           # Custom MastraScorer implementations
+│   │   │   └── answer-correctness-scorer.ts
+│   │   └── index.ts           # Main Mastra AI configuration
+│   ├── models/                # Standardized wrappers for different AI model providers
+│   │   ├── i-model.ts         # Interface for all model wrappers
+│   │   ├── mastra-agent-model.ts # Adapter for Mastra Agents
+│   │   ├── openai-model.ts    # Wrapper for OpenAI models
+│   │   └── google-model.ts    # Wrapper for Google models
+│   ├── tests/                 # Definitions of test scenarios (Eval Functions)
+│   │   ├── i-test-scenario.ts # Interface for test scenarios
+│   │   ├── summarization-scenario.ts
+│   │   └── code-generation-scenario.ts
+│   └── utils/                 # Utility functions and helpers
+│       ├── prompt-manager.ts  # Manages and versions prompts
+│       └── types.ts           # Shared TypeScript types
+├── config/                    # Configuration files for models, prompts, and scenarios
+│   ├── models.json            # Defines available models and their configurations
+│   ├── prompts.json           # Defines prompts and their versions
+│   └── test-scenarios.json    # Defines test scenarios and their parameters
+├── results/                   # Directory where all test execution results will be stored
+├── scripts/                   # Command-line interface scripts for running evaluations
+│   └── run-eval.ts            # Script to trigger and manage evaluation runs
+├── .env.example               # Example environment variables file
+├── package.json
+├── tsconfig.json
+├── README.md                  # Comprehensive documentation for the template
+└── jest.config.ts             # (Optional) For unit tests within the framework itself
+```
