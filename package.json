@@ -8,6 +8,8 @@
     "test:embeddings": "tsx tests/embeddings/test-embeddings.ts",
     "test:embeddings:openai": "tsx tests/embeddings/test-openai-embeddings.ts",
     "test:retrieval": "tsx tests/retrieval/test-retrieval.ts",
+    "test:retrieval:ollama": "tsx tests/retrieval/test-retrieval-ollama.ts",
+    "test:retrieval:all": "tsx tests/retrieval/test-retrieval.ts && tsx tests/retrieval/test-retrieval-ollama.ts",
     "test:inspect": "tsx tests/ingestion/inspect-chunks.ts",
     "test:debug": "tsx tests/ingestion/debug-parsing.ts",
     "dev": "mastra dev",
