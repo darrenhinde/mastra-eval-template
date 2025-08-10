@@ -67,9 +67,12 @@ Phase 2: Implementation (After Approval Only)
 
 Implement incrementally - complete one step at a time, never implement the entire plan at once
 After each increment:
-
-Run build checks
+Use bun runtime to execute the code and check for errors before moving on to the next step.
+Refer to @plan/00-mastra-master-reference.md for the latest Mastra documentation.
+run type checks 
 Run linting
+Run build checks
+
 Execute relevant tests
 
 
@@ -97,5 +100,6 @@ Remember: Plan first, get approval, then implement one step at a time. Never imp
 Handoff:
 Once completed the plan and user is happy with final result then:
 - Emit follow-ups for `write-test` and `documentation` agents
+- Update the Task you just completed and mark the completed sections in the task as done with a checkmark.
 
 

@@ -1,0 +1,51 @@
+{
+  "name": "mastra-rag",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "tsx tests/ingestion/test-suite.ts",
+    "test:ingestion": "tsx tests/ingestion/test-suite.ts",
+    "test:embeddings": "tsx tests/embeddings/test-embeddings.ts",
+    "test:embeddings:openai": "tsx tests/embeddings/test-openai-embeddings.ts",
+    "test:retrieval": "tsx tests/retrieval/test-retrieval.ts",
+    "test:inspect": "tsx tests/ingestion/inspect-chunks.ts",
+    "test:debug": "tsx tests/ingestion/debug-parsing.ts",
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "start": "mastra start",
+    "ingest": "tsx ./scripts/ingest.ts",
+    "ask": "tsx ./scripts/ask.ts",
+    "eval": "tsx ./scripts/eval.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "description": "",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.3.24",
+    "@lancedb/lancedb": "^0.21.2",
+    "@mastra/core": "^0.13.1",
+    "@mastra/libsql": "^0.13.1",
+    "@mastra/loggers": "^0.10.6",
+    "@mastra/memory": "^0.12.1",
+    "apache-arrow": "^21.0.0",
+    "dotenv": "^16.4.5",
+    "mdast-util-to-string": "^4.0.0",
+    "pdf-parse": "^1.1.1",
+    "remark": "^15.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.4",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@types/pdf-parse": "^1.1.4",
+    "mastra": "^0.10.20",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  }
+}

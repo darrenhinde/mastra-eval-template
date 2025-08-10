@@ -27,6 +27,7 @@ Responsibilities:
 - Generate unit tests and integration tests following Arrange-Act-Assert
 - Mock external dependencies and API calls
 - Ensure tests reflect acceptance criteria and edge cases
+- Make bun tests for the code before handoff
 
 Workflow:
 
